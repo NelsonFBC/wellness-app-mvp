@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Wellness Companion - MVP (Live)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s ease-in-out, stroke 0.5s ease-in-out;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white antialiased">
+
+    <div class="min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md mx-auto">
+            
+            <!-- Header -->
+            <header class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-cyan-400">Wellness Companion</h1>
+                <p class="text-gray-400 mt-1">Your daily AI-powered wellness report.</p>
+            </header>
+
+            <!-- Main Dashboard -->
+            <main class="bg-gray-800 rounded-2xl shadow-2xl p-6 space-y-6">
+
+                <!-- Wellness Score Section -->
+                <div class="flex flex-col items-center text-center">
+                    <p class="text-sm font-medium text-gray-400">Today's Readiness Score</p>
+                    <div class="relative w-48 h-48 my-4">
+                        <svg class="w-full h-full" viewBox="0 0 120 120">
+                            <circle class="text-gray-700" stroke-width="8" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                            <circle id="progress-circle" class="progress-ring__circle text-cyan-400" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="52" cx="60" cy="60" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span id="wellness-score" class="text-5xl font-bold">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insight Section -->
+                <div class="bg-gray-900/50 rounded-lg p-4 min-h-[100px] flex items-center justify-center">
+                    <p id="ai-insight" class="text-gray-300 text-sm text-center leading-relaxed">Click "Analyze My Data" to generate your daily report.</p>
+                </div>
+
+                <!-- Key Metrics Section -->
+                <div>
+                    <h3 class="font-semibold text-gray-400 mb-3 text-center">Key Metrics</h3>
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <!-- Sleep -->
+                        <div class="bg-gray-700/50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-400">Sleep</p>
+                            <p id="sleep-metric" class="text-xl font-semibold mt-1">--</p>
+                        </div>
+                        <!-- Heart Rate -->
+                        <div class="bg-gray-700/50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-400">Resting HR</p>
+                            <p id="hr-metric" class="text-xl font-semibold mt-1">--</p>
+                        </div>
+                        <!-- Activity -->
+                        <div class="bg-gray-700/50 p-4 rounded-lg">
+                            <p class="text-xs text-gray-400">Activity</p>
+                            <p id="activity-metric" class="text-xl font-semibold mt-1">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-4">
+                    <button id="analyze-button" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed">
+                        Analyze My Data
+                    </button>
+                </div>
+
+            </main>
+
+            <!-- Footer -->
+            <footer class="text-center mt-8">
+                <p class="text-xs text-gray-500">This prototype sends data to a locally running backend.</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const analyzeButton = document.getElementById('analyze-button');
+            
+            // --- UI Elements ---
+            const wellnessScoreEl = document.getElementById('wellness-score');
+            const aiInsightEl = document.getElementById('ai-insight');
+            const sleepMetricEl = document.getElementById('sleep-metric');
+            const hrMetricEl = document.getElementById('hr-metric');
+            const activityMetricEl = document.getElementById('activity-metric');
+            const progressCircle = document.getElementById('progress-circle');
+            const radius = progressCircle.r.baseVal.value;
+            const circumference = radius * 2 * Math.PI;
+            progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            progressCircle.style.strokeDashoffset = circumference;
+
+            // --- Client-Side Mock Data Generation ---
+            // This simulates the data we'll eventually get from Google Health API.
+            // We cycle through scenarios to test the backend logic.
+            const dataScenarios = [
+                { // Good Day
+                    sleep: { duration: 8.2, quality: 0.9, deep_percent: 0.25 },
+                    heartRate: { resting: 55, hrv: 70 },
+                    activity: { steps: 12000, zone_minutes: 45 }
+                },
+                { // Poor Sleep Day
+                    sleep: { duration: 5.5, quality: 0.7, deep_percent: 0.10 },
+                    heartRate: { resting: 64, hrv: 45 },
+                    activity: { steps: 8000, zone_minutes: 10 }
+                },
+                { // Overtraining Risk Day
+                    sleep: { duration: 7.0, quality: 0.8, deep_percent: 0.15 },
+                    heartRate: { resting: 68, hrv: 38 },
+                    activity: { steps: 18000, zone_minutes: 90 }
+                },
+                { // Balanced Day
+                    sleep: { duration: 7.5, quality: 0.85, deep_percent: 0.20 },
+                    heartRate: { resting: 60, hrv: 60 },
+                    activity: { steps: 10000, zone_minutes: 30 }
+                }
+            ];
+            let currentScenarioIndex = 0;
+
+            // --- API Call Function ---
+            async function getWellnessAnalysis(data) {
+                // Set button to loading state
+                analyzeButton.disabled = true;
+                analyzeButton.textContent = 'Analyzing...';
+                aiInsightEl.textContent = 'Contacting AI coach...';
+
+                try {
+                    const response = await fetch('http://127.0.0.1:8000/analyze', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(data),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    return result;
+
+                } catch (error) {
+                    console.error("Error fetching analysis:", error);
+                    // --- FIX: Improved error message for user ---
+                    let insightMessage = 'Could not connect to the analysis server.';
+                    if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+                        insightMessage = 'Could not connect to the analysis server. This is likely a CORS issue. Please ensure the updated backend code with the CORS fix is running.';
+                    }
+                    return { score: '!', insight: insightMessage };
+                } finally {
+                    // Reset button state
+                    analyzeButton.disabled = false;
+                    analyzeButton.textContent = 'Analyze My Data';
+                }
+            }
+
+            // --- Update UI Function ---
+            function updateDashboard(data, analysisResult) {
+                const { score, insight } = analysisResult;
+
+                // Update score and progress circle
+                wellnessScoreEl.textContent = score;
+                if (typeof score === 'number') {
+                    const offset = circumference - (score / 100) * circumference;
+                    progressCircle.style.strokeDashoffset = offset;
+                    
+                    // Update color based on score
+                    if(score >= 75) {
+                        progressCircle.classList.remove('text-yellow-400', 'text-red-500');
+                        progressCircle.classList.add('text-cyan-400');
+                    } else if (score >= 50) {
+                        progressCircle.classList.remove('text-cyan-400', 'text-red-500');
+                        progressCircle.classList.add('text-yellow-400');
+                    } else {
+                        progressCircle.classList.remove('text-cyan-400', 'text-yellow-400');
+                        progressCircle.classList.add('text-red-500');
+                    }
+                } else {
+                     progressCircle.style.strokeDashoffset = circumference;
+                     progressCircle.classList.remove('text-yellow-400', 'text-cyan-400');
+                     progressCircle.classList.add('text-red-500');
+                }
+
+                // Update text elements
+                aiInsightEl.textContent = insight;
+                sleepMetricEl.textContent = `${data.sleep.duration}h`;
+                hrMetricEl.textContent = `${data.heartRate.resting}bpm`;
+                activityMetricEl.textContent = `${Math.round(data.activity.steps / 1000)}k`;
+            }
+
+            // --- Event Listener ---
+            analyzeButton.addEventListener('click', async () => {
+                // 1. Get the current data scenario to send to the backend
+                const currentData = dataScenarios[currentScenarioIndex];
+                
+                // 2. Call the backend API
+                const analysisResult = await getWellnessAnalysis(currentData);
+                
+                // 3. Update the dashboard with the result from the backend
+                updateDashboard(currentData, analysisResult);
+                
+                // 4. Cycle to the next scenario for the next click
+                currentScenarioIndex = (currentScenarioIndex + 1) % dataScenarios.length;
+            });
+        });
+    </script>
+</body>
+</html>
